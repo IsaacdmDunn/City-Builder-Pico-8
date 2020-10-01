@@ -228,6 +228,9 @@ function draw_cursor_info()
  print("😐"..flr(data.happy),40,0,7)
  print("⌂"..flr(data.pop),64,0,7)
  print("$"..flr(data.cash),96,0,7)
+ --print(data.traffic,96,8,7)
+ --print(data.health,96,16,7)
+ --print(data.employment,96,24,7)
 end
 -->8
 --game screen
@@ -266,54 +269,70 @@ end
 -->8
 --place buildings
 function place_building()
- if menu_cursorx==0 then
+ if menu_cursorx==0 and data.cash>=20 then
   place_low_house()
- elseif menu_cursorx==1 then
+ elseif menu_cursorx==1 and data.cash>=20 then
   place_low_shop()
- elseif menu_cursorx==2 then
+ elseif menu_cursorx==2 and data.cash>=20 then
   place_low_factory()
- elseif menu_cursorx==3 then
+ elseif menu_cursorx==3 and data.cash>=80 then
   place_high_house()
- elseif menu_cursorx==4 then
+ elseif menu_cursorx==4 and data.cash>=80 then
   place_high_shop()
- elseif menu_cursorx==5 then
+ elseif menu_cursorx==5 and data.cash>=80 then
   place_high_factory()
- elseif menu_cursorx==6 then
+ elseif menu_cursorx==6 and data.cash>=10 then
   place_road()
- elseif menu_cursorx==7 then
+ elseif menu_cursorx==7 and data.cash>=100 then
   place_hospital()
  end
 end
 
 function place_low_house()
  mset(game_cursorx,game_cursory,64)
+ data.cash-=20
+ data.poplimit+=10
 end
 
 function place_low_shop()
  mset(game_cursorx,game_cursory,65)
+ data.cash-=20
+ data.jobs+=50
 end
 
 function place_low_factory()
  mset(game_cursorx,game_cursory,66)
+ data.cash-=20
+ data.jobs+=50
 end
 
 function place_high_house()
  mset(game_cursorx,game_cursory,67)
+ data.cash-=80
+ data.poplimit+=30
 end
 
 function place_high_shop()
  mset(game_cursorx,game_cursory,68)
+ data.cash-=80
+ data.jobs+=150
 end
 
 function place_high_factory()
  mset(game_cursorx,game_cursory,69)
+ data.cash-=80
+ data.jobs+=150
 end
 
 function place_hospital()
  mset(game_cursorx,game_cursory,71)
+ data.cash-=100
+ data.hositals+=1
 end
 
 function place_road()
+ data.cash-=10
+ data.roads+=1
  local left=get_road(-1,0)
  local right=get_road(1,0)
  local up=get_road(0,-1)
@@ -437,24 +456,32 @@ end
 --game logic
 function init_game_logic()
  data={}
- data.pop=0
- data.poplimit=0
+ data.pop=1
+ data.poplimit=1
+ data.employment=100
+ data.jobs=0
  data.traffic=0
- data.roads=0
+ data.roads=1
  data.health=100
- data.hositals=0
- data.cash=100
+ data.hositals=1
+ data.cash=1000
  data.happy=100
 end
 
 function update_game_logic()
  if frame_count==30 then
   frame_count=0
-  data.cash+=data.pop/100
-  data.pop+=(data.poplimit-data.pop)/10000*data.happy
+  data.cash+=data.pop/10
+  data.pop+=(data.poplimit-data.pop)/1000*data.happy
+  data.employment=(data.jobs-data.pop)/100
   data.health=(data.hositals*10)/data.pop
-  data.traffic=data.pop/(data.roads*50)
-  data.happy+=data.health-data.traffic
+  data.traffic=data.pop/data.roads/10
+  data.happy+=data.health-data.traffic+data.employment/10
+  if data.happy>100 then
+   data.happy=100
+  elseif data.happy<-100 then
+   data.happy=-100
+  end
  end
 end
 
