@@ -6,6 +6,7 @@ __lua__
 
 function _init()
  game_state=0--main menu
+ frame_count=0
  land_gen()
  init_main()
  init_game()
@@ -17,6 +18,7 @@ function _update()
  else
   update_game()
  end
+ frame_count+=1 
 end
 
 function _draw()
@@ -41,12 +43,16 @@ end
 function update_main()
  if btnp(⬆️) and main_cursorx==2 then
   main_cursorx-=1
+  sfx(0)
  elseif btnp(⬇️) and main_cursorx==1 then
   main_cursorx+=1
+  sfx(0)
  elseif btnp(🅾️) then
   if main_cursorx==1 then
+   sfx(1)
    new_game()
   else
+   sfx(1)
    --load game
   end
  end
@@ -85,6 +91,7 @@ end
 
 function new_game()
  game_state=1
+ init_game_logic()
  land_gen()
  init_map()
 end
@@ -143,12 +150,16 @@ end
 function update_game_cursor()
  if btnp(⬅️) then
   game_cursorx-=1
+  sfx(0)
  elseif btnp(➡️) then
   game_cursorx+=1
+  sfx(0)
  elseif btnp(⬆️) then
   game_cursory-=1
+  sfx(0)
  elseif btnp(⬇️) then
   game_cursory+=1
+  sfx(0)
  elseif btnp(🅾️) then
   place_building()
  end
@@ -157,8 +168,10 @@ end
 function update_build_menu_cursor()
  if btnp(⬅️) and menu_cursorx>0 then
   menu_cursorx-=1
+  sfx(0)
  elseif btnp(➡️) and menu_cursorx<7 then
   menu_cursorx+=1
+  sfx(0)
  end
 end
 
@@ -208,10 +221,13 @@ function draw_cursor_info()
   tile_type="mountain"
  elseif mget(game_cursorx,game_cursory)==4 then
   tile_type="lake"
+ elseif fget(mget(game_cursorx,game_cursory),0)==true then
+  tile_type="road"
  end
  print(tile_type,0,0,7)
- print("😐".."happy",48,0,7)
- print("⌂".."pop",96,0,7)
+ print("😐"..flr(data.happy),40,0,7)
+ print("⌂"..flr(data.pop),64,0,7)
+ print("$"..flr(data.cash),96,0,7)
 end
 -->8
 --game screen
@@ -232,6 +248,7 @@ function update_game()
  elseif build_menu_open==true then
   update_build_menu_cursor()
  end
+ update_game_logic()
 end
 
 function draw_game()
@@ -416,6 +433,32 @@ function update_road(offsetx,offsety)
   mset(game_cursorx+offsetx,game_cursory+offsety,115)
  end
 end
+-->8
+--game logic
+function init_game_logic()
+ data={}
+ data.pop=0
+ data.poplimit=0
+ data.traffic=0
+ data.roads=0
+ data.health=100
+ data.hositals=0
+ data.cash=100
+ data.happy=100
+end
+
+function update_game_logic()
+ if frame_count==30 then
+  frame_count=0
+  data.cash+=data.pop/100
+  data.pop+=(data.poplimit-data.pop)/10000*data.happy
+  data.health=(data.hositals*10)/data.pop
+  data.traffic=data.pop/(data.roads*50)
+  data.happy+=data.health-data.traffic
+ end
+end
+
+
 __gfx__
 000000003333b3333333333333336333333333330000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 000000003b333333333bb3333336663333cccc330000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
@@ -496,3 +539,7 @@ __map__
 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 0000002021212121212121212200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 0000003031313131313131313200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+__sfx__
+000100001b7501c7501d7501875000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000021150281500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000f0000c0001650009200092000a2000b2000c2000d2000f2001020010200112001120011200112000f2000e2000a2000920006200022000020004100021000b0001200004000040000c7000200006700
